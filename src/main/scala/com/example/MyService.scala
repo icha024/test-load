@@ -31,7 +31,7 @@ trait MyService extends HttpService {
   implicit def executionContext = context.dispatcher
 
   val myRoute =
-    path("/promises") {
+    path("promises") {
       get {
         respondWithMediaType(`text/html`) {
           onComplete(promiseFunc()) {
@@ -55,7 +55,29 @@ trait MyService extends HttpService {
           }
         }
       }
-    } ~ path("") {
+    } ~ path("outside-complete" / Segment) {
+      extraPath =>
+      get {
+        respondWithMediaType(`text/html`) {
+          val loopRes = loopFunc(extraPath)
+          complete {
+            <html>
+              <body>
+                <h1>Say hello to
+                  <i>spray-routing</i>
+                  on
+                  <i>spray-can</i>
+                  !</h1>
+                Rendering Thread (is it?): ${Thread.currentThread().getId}
+                <br/>
+                ContextThread: ${loopRes}
+                <br/>
+              </body>
+            </html>
+          }
+        }
+      }
+    } ~ path("" ) {
       get {
         respondWithMediaType(`text/html`) {
           complete {
@@ -67,6 +89,7 @@ trait MyService extends HttpService {
                   <i>spray-can</i>
                   !</h1>
                 Rendering Thread (is it?): ${Thread.currentThread().getId}
+                <br/>
                 ContextThread: ${loopFunc()}
                 <br/>
               </body>
@@ -79,16 +102,16 @@ trait MyService extends HttpService {
   def promiseFunc()(implicit ec: ExecutionContext): Future[String] = {
     val p: Promise[String] = Promise[String]()
     Future {
-      p.success(loopFunc)
+      p.success(loopFunc())
     }
     p.future
   }
 
-  def loopFunc(): String = {
+  def loopFunc(extraPath: String = ""): String = {
     var sum: Long = 0
-    for (i <- 0 to 50000000) {
+    for (i <- 0 to 30000000) {
       sum += (Math.random() * 100.0).toLong
     }
-    "Executing thread ID: " + Thread.currentThread().getId.toString + s" (Random number: $sum)"
+    "Executing thread ID: " + Thread.currentThread().getId.toString + s" (Random number: $sum) - " + extraPath
   }
 }
