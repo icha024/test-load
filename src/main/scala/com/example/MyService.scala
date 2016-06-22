@@ -31,10 +31,10 @@ trait MyService extends HttpService {
   implicit def executionContext = context.dispatcher
 
   val myRoute =
-    path("") {
+    path("/promises") {
       get {
         respondWithMediaType(`text/html`) {
-          onComplete(myFunc()) {
+          onComplete(promiseFunc()) {
             case Success(res) => {
               complete {
                 <html>
@@ -43,7 +43,7 @@ trait MyService extends HttpService {
                       <i>spray-routing</i>
                       on
                       <i>spray-can</i>
-                      !</h1>
+                      ! Promises route:</h1>
                     Rendering Thread (is it?): ${Thread.currentThread().getId}
                     <br/>
                     ContextThread: ${res}
@@ -55,22 +55,40 @@ trait MyService extends HttpService {
           }
         }
       }
+    } ~ path("") {
+      get {
+        respondWithMediaType(`text/html`) {
+          complete {
+            <html>
+              <body>
+                <h1>Say hello to
+                  <i>spray-routing</i>
+                  on
+                  <i>spray-can</i>
+                  !</h1>
+                Rendering Thread (is it?): ${Thread.currentThread().getId}
+                ContextThread: ${loopFunc()}
+                <br/>
+              </body>
+            </html>
+          }
+        }
+      }
     }
 
-  def myFunc()(implicit ec: ExecutionContext): Future[String] = {
+  def promiseFunc()(implicit ec: ExecutionContext): Future[String] = {
     val p: Promise[String] = Promise[String]()
     Future {
-//      println("Start sleep")
-//      Thread.sleep(500)
-//      println("End sleep")
-
-      var sum: Long = 0
-      for (i <- 0 to 1000000) {
-        sum += (Math.random() * 100.0).toLong
-      }
-      p.success(Thread.currentThread().getId.toString + s" (Random number: $sum)")
+      p.success(loopFunc)
     }
-
     p.future
+  }
+
+  def loopFunc(): String = {
+    var sum: Long = 0
+    for (i <- 0 to 50000000) {
+      sum += (Math.random() * 100.0).toLong
+    }
+    "Executing thread ID: " + Thread.currentThread().getId.toString + s" (Random number: $sum)"
   }
 }
