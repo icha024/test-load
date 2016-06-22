@@ -31,31 +31,32 @@ trait MyService extends HttpService {
   implicit def executionContext = context.dispatcher
 
   val myRoute =
-    path("promises") {
-      get {
-        respondWithMediaType(`text/html`) {
-          onComplete(promiseFunc()) {
-            case Success(res) => {
-              complete {
-                <html>
-                  <body>
-                    <h1>Say hello to
-                      <i>spray-routing</i>
-                      on
-                      <i>spray-can</i>
-                      ! Promises route:</h1>
-                    Rendering Thread (is it?): ${Thread.currentThread().getId}
-                    <br/>
-                    ContextThread: ${res}
-                  </body>
-                </html>
-              }
-            }
-            case Failure(ex) => complete(StatusCodes.InternalServerError)
-          }
-        }
-      }
-    } ~ path("outside-complete" / Segment) {
+//    path("promises") {
+//      get {
+//        respondWithMediaType(`text/html`) {
+//          onComplete(promiseFunc()) {
+//            case Success(res) => {
+//              complete {
+//                <html>
+//                  <body>
+//                    <h1>Say hello to
+//                      <i>spray-routing</i>
+//                      on
+//                      <i>spray-can</i>
+//                      ! Promises route:</h1>
+//                    Rendering Thread (is it?): ${Thread.currentThread().getId}
+//                    <br/>
+//                    ContextThread: ${res}
+//                  </body>
+//                </html>
+//              }
+//            }
+//            case Failure(ex) => complete(StatusCodes.InternalServerError)
+//          }
+//        }
+//      }
+//    } ~
+      path("outside-complete" / Segment) {
       extraPath =>
       get {
         respondWithMediaType(`text/html`) {
@@ -77,27 +78,28 @@ trait MyService extends HttpService {
           }
         }
       }
-    } ~ path("" ) {
-      get {
-        respondWithMediaType(`text/html`) {
-          complete {
-            <html>
-              <body>
-                <h1>Say hello to
-                  <i>spray-routing</i>
-                  on
-                  <i>spray-can</i>
-                  !</h1>
-                Rendering Thread (is it?): ${Thread.currentThread().getId}
-                <br/>
-                ContextThread: ${loopFunc()}
-                <br/>
-              </body>
-            </html>
-          }
-        }
-      }
     }
+//      ~ path("" ) {
+//      get {
+//        respondWithMediaType(`text/html`) {
+//          complete {
+//            <html>
+//              <body>
+//                <h1>Say hello to
+//                  <i>spray-routing</i>
+//                  on
+//                  <i>spray-can</i>
+//                  !</h1>
+//                Rendering Thread (is it?): ${Thread.currentThread().getId}
+//                <br/>
+//                ContextThread: ${loopFunc()}
+//                <br/>
+//              </body>
+//            </html>
+//          }
+//        }
+//      }
+//    }
 
   def promiseFunc()(implicit ec: ExecutionContext): Future[String] = {
     val p: Promise[String] = Promise[String]()
